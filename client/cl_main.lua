@@ -296,10 +296,17 @@ end)
 
 -- Open outfits trigger (e.g. from target interaction or menu trigger)
 RegisterNetEvent("void_clothingbag:client:openWardrobe", function()
-    -- Quick unzip animation
+    local anim = Config.ChangeOutfitAnimation or {
+        dict = "clothingshirt",
+        clip = "try_shirt_positive_d",
+        duration = 4000,
+        flag = 49,
+        label = "Changing clothes..."
+    }
+    
     local completed = lib.progressBar({
-        duration = 1000,
-        label = "Unzipping bag...",
+        duration = anim.duration,
+        label = anim.label,
         useLib = true,
         disable = {
             car = true,
@@ -308,9 +315,9 @@ RegisterNetEvent("void_clothingbag:client:openWardrobe", function()
             mouse = false
         },
         anim = {
-            dict = "amb@medic@standing@tendtodead@idle_a",
-            clip = "idle_a",
-            flag = 1
+            dict = anim.dict,
+            clip = anim.clip,
+            flag = anim.flag
         }
     })
     

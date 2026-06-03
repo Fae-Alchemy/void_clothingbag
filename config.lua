@@ -96,6 +96,15 @@ Config.Labels = {
     invalidCondition = "You cannot use this right now"
 }
 
+-- Animation settings for changing outfits from a placed bag
+Config.ChangeOutfitAnimation = {
+    dict = "clothingshirt",
+    clip = "try_shirt_positive_d",
+    duration = 4000, -- duration in milliseconds
+    flag = 49, -- upper body only animation
+    label = "Changing clothes..."
+}
+
 -- CUSTOM CLOTHING TRIGGER CALLBACK
 -- This function is called if Config.ClothingSystem is set to "custom"
 -- Useful for custom clothing systems or paid assets not listed above
