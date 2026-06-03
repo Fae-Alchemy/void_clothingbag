@@ -341,3 +341,42 @@ AddEventHandler("playerDropped", function(reason)
         end
     end
 end)
+
+-------------------------------------------------------------------------------
+-- VERSION CHECKER
+-------------------------------------------------------------------------------
+
+local function CheckVersion()
+    local currentVersion = GetResourceMetadata(GetCurrentResourceName(), 'version', 0)
+    if not currentVersion then
+        print("^1[void_clothingbag] Unable to check version: fxmanifest.lua is missing 'version' metadata.^7")
+        return
+    end
+
+    PerformHttpRequest('https://raw.githubusercontent.com/Fae-Alchemy/void_clothingbag/main/fxmanifest.lua', function(statusCode, response, headers)
+        if statusCode ~= 200 then
+            print("^1[void_clothingbag] Version check failed: GitHub returned status code " .. tostring(statusCode) .. "^7")
+            return
+        end
+
+        local latestVersion = string.match(response, "version%s+['\"]([^'\"]+)['\"]")
+        if latestVersion then
+            if latestVersion ~= currentVersion then
+                print("^4====================================================================^7")
+                print("^4[void_clothingbag] ^1A new update is available!^7")
+                print(("^4[void_clothingbag] ^7Current Version: ^1%s^7 | Latest Version: ^2%s^7"):format(currentVersion, latestVersion))
+                print("^4[void_clothingbag] ^7Download the update here: ^5https://github.com/Fae-Alchemy/void_clothingbag^7")
+                print("^4====================================================================^7")
+            else
+                print(("^4[void_clothingbag] ^7Resource is ^2up-to-date^7 (Version: %s)"):format(currentVersion))
+            end
+        else
+            print("^1[void_clothingbag] Version check failed: Unable to parse version from GitHub manifest.^7")
+        end
+    end, 'GET')
+end
+
+CreateThread(function()
+    Wait(2000)
+    CheckVersion()
+end)
