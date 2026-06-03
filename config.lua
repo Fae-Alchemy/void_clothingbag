@@ -14,7 +14,7 @@ Config.NotifyDuration = 5000
 Config.BagItems = {
     ["clothingbag"] = {
         label = "Clothing Bag",
-        propModel = "prop_drop_arm_bag_01", -- Model to spawn when placed
+        propModel = "prop_mil_bag_01", -- Model to spawn when placed
         mode = "place", -- Options: "place" (spawns prop on ground) or "use" (opens menu directly on use)
         
         -- Animation settings for placing/packing
