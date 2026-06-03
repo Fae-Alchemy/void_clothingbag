@@ -16,7 +16,7 @@ end
 
 -- Helper to load prop models safely
 local function LoadModel(modelHash)
-    if not IsModelInCdimage(modelHash) then return false end
+    if not IsModelValid(modelHash) then return false end
     RequestModel(modelHash)
     local timeout = 1000
     while not HasModelLoaded(modelHash) and timeout > 0 do
@@ -96,11 +96,30 @@ local function CreateLocalBag(bagId, bagData)
     
     local modelHash = GetHashKey(itemConf.propModel)
     if not LoadModel(modelHash) then
-        DebugPrint("Failed to load model: " .. itemConf.propModel)
+        print(("^1[void_clothingbag] Error: Failed to load prop model '%s'. Make sure this prop exists on your server game build!^7"):format(itemConf.propModel))
         return
     end
     
-    local prop = CreateObject(modelHash, bagData.coords.x, bagData.coords.y, bagData.coords.z, false, false, false)
+    if not bagData.coords then
+        print(("^1[void_clothingbag] Error: Received nil coordinates for bag ID '%s'^7"):format(bagId))
+        return
+    end
+    
+    local x, y, z
+    if type(bagData.coords) == "vector3" then
+        x, y, z = bagData.coords.x, bagData.coords.y, bagData.coords.z
+    elseif type(bagData.coords) == "table" then
+        x, y, z = bagData.coords.x or bagData.coords[1], bagData.coords.y or bagData.coords[2], bagData.coords.z or bagData.coords[3]
+    else
+        x, y, z = tonumber(bagData.coords.x), tonumber(bagData.coords.y), tonumber(bagData.coords.z)
+    end
+    
+    if not x or not y or not z then
+        print(("^1[void_clothingbag] Error: Invalid coordinate values: x=%s, y=%s, z=%s^7"):format(tostring(x), tostring(y), tostring(z)))
+        return
+    end
+    
+    local prop = CreateObject(modelHash, x, y, z, false, false, false)
     SetEntityHeading(prop, bagData.heading)
     FreezeEntityPosition(prop, true)
     SetEntityCollision(prop, true, true)
@@ -109,7 +128,7 @@ local function CreateLocalBag(bagId, bagData)
     spawnedBags[bagId] = {
         id = bagId,
         prop = prop,
-        coords = bagData.coords,
+        coords = vector3(x, y, z),
         heading = bagData.heading,
         ownerCitizenId = bagData.ownerCitizenId,
         ownerSource = bagData.ownerSource,
