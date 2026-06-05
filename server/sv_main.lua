@@ -95,11 +95,20 @@ end
 -------------------------------------------------------------------------------
 
 local function UseBagItem(source, itemName)
+    print(("[void_clothingbag] Item '%s' used by player server ID %d"):format(itemName, source))
+    
     local player = Bridge.GetPlayer(source)
-    if not player then return end
+    if not player then
+        print(("[void_clothingbag] Error: Could not retrieve player object for server ID %d"):format(source))
+        return
+    end
     
     local pData = player.GetData()
     local citizenid = pData.citizenid
+    if not citizenid then
+        print(("[void_clothingbag] Error: Player citizenid is nil for server ID %d"):format(source))
+        return
+    end
     
     -- Check if player already has an active bag placed or in placement phase
     for bagId, bag in pairs(activeBags) do
@@ -127,14 +136,18 @@ end
 
 local function RegisterItems()
     local fw = Bridge.GetFramework()
-    DebugPrint("Registering usable items for framework: " .. fw)
+    print(("[void_clothingbag] Initializing usable items for framework: %s"):format(fw))
     
     for itemName, conf in pairs(Config.BagItems) do
+        -- 1. Standard QBCore usable items
         if fw == 'qbcore' then
             local QBCore = exports['qb-core']:GetCoreObject()
             QBCore.Functions.CreateUseableItem(itemName, function(source, item)
                 UseBagItem(source, itemName)
             end)
+            print(("[void_clothingbag] Registered QBCore usable item: %s"):format(itemName))
+            
+        -- 2. Standard ESX usable items
         elseif fw == 'esx' then
             local ESX = nil
             pcall(function() ESX = exports['es_extended']:getSharedObject() end)
@@ -143,13 +156,28 @@ local function RegisterItems()
                 ESX.RegisterUsableItem(itemName, function(source)
                     UseBagItem(source, itemName)
                 end)
+                print(("[void_clothingbag] Registered ESX usable item: %s"):format(itemName))
             end
+            
+        -- 3. Standalone command registration for testing
         else
-            -- Debug / Fallback commands for testing in standalone mode
             RegisterCommand("use_" .. itemName, function(source, args)
                 UseBagItem(source, itemName)
             end, false)
+            print(("[void_clothingbag] Registered standalone test command: /use_%s"):format(itemName))
         end
+
+        -- 4. Dynamic ox_inventory exports registration
+        -- This allows ox_inventory to trigger this export when the item is used
+        AddEventHandler('__cfx_export_' .. GetCurrentResourceName() .. '_' .. itemName, function(setCB)
+            setCB(function(event, item, inventory, slot, data)
+                if event == 'usingItem' then
+                    UseBagItem(inventory.id, itemName)
+                    return true
+                end
+            end)
+        end)
+        DebugPrint("Registered dynamic ox_inventory export for: " .. itemName)
     end
 end
 
