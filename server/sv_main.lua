@@ -139,15 +139,22 @@ local function RegisterItems()
     print(("[void_clothingbag] Initializing usable items for framework: %s"):format(fw))
     
     for itemName, conf in pairs(Config.BagItems) do
-        -- 1. Standard QBCore usable items
-        if fw == 'qbcore' then
+        -- 1. Standard Qbox usable items
+        if fw == 'qbx' then
+            exports.qbx_core:CreateUseableItem(itemName, function(source, item)
+                UseBagItem(source, itemName)
+            end)
+            print(("[void_clothingbag] Registered Qbox usable item: %s"):format(itemName))
+
+        -- 2. Standard QBCore usable items
+        elseif fw == 'qbcore' then
             local QBCore = exports['qb-core']:GetCoreObject()
             QBCore.Functions.CreateUseableItem(itemName, function(source, item)
                 UseBagItem(source, itemName)
             end)
             print(("[void_clothingbag] Registered QBCore usable item: %s"):format(itemName))
             
-        -- 2. Standard ESX usable items
+        -- 3. Standard ESX usable items
         elseif fw == 'esx' then
             local ESX = nil
             pcall(function() ESX = exports['es_extended']:getSharedObject() end)
@@ -159,7 +166,7 @@ local function RegisterItems()
                 print(("[void_clothingbag] Registered ESX usable item: %s"):format(itemName))
             end
             
-        -- 3. Standalone command registration for testing
+        -- 4. Standalone command registration for testing
         else
             RegisterCommand("use_" .. itemName, function(source, args)
                 UseBagItem(source, itemName)
