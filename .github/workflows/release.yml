@@ -1,0 +1,36 @@
+name: Release Resource
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on version tags (e.g., v1.0.0, v1.0.1)
+
+jobs:
+  build:
+    name: Package and Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Create ZIP Archive
+        run: |
+          # Create staging folder to structure the zip file correctly for FiveM servers
+          mkdir -p staging/void_clothingbag
+          
+          # Copy source files excluding git files, staging folders, and workflow configs
+          rsync -r --exclude='.git' --exclude='.github' --exclude='staging' ./ staging/void_clothingbag/
+          
+          # Compress the staged directory into a clean zip
+          cd staging
+          zip -r ../void_clothingbag.zip ./void_clothingbag
+          cd ..
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: void_clothingbag.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
