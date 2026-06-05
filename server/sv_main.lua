@@ -394,7 +394,7 @@ local function CheckVersion()
             return
         end
 
-        local latestVersion = string.match(response, "version%s+['\"]([^'\"]+)['\"]")
+        local latestVersion = string.match(response, "%sversion%s+['\"]([^'\"]+)['\"]")
         if latestVersion then
             if latestVersion ~= currentVersion then
                 print("^4====================================================================^7")
