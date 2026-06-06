@@ -37,7 +37,7 @@ local function RefundOfflinePlayer(citizenid, identifier, item)
         return
     end
     
-    if fw == "qbcore" then
+    if fw == "qbcore" or fw == "qbx" then
         MySQL.single('SELECT inventory FROM players WHERE citizenid = ?', {citizenid}, function(result)
             if result and result.inventory then
                 local inventory = {}
